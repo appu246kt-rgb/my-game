@@ -1,0 +1,1925 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Memory Master - Premium</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: white;
+            overflow-x: hidden;
+            perspective: 1000px;
+        }
+
+        /* 3D Background Elements */
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+        }
+        
+        .star {
+            position: absolute;
+            background-color: white;
+            border-radius: 50%;
+        }
+        
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+        
+        .particle {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            box-shadow: 0 0 10px 2px rgba(255, 255, 255, 0.5);
+        }
+        
+        .container {
+            max-width: 900px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 25px;
+            box-shadow: 
+                0 15px 35px rgba(0, 0, 0, 0.5),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            margin-top: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            z-index: 1;
+            transform-style: preserve-3d;
+            transform: rotateX(5deg);
+            transition: transform 0.5s;
+        }
+        
+        .container:hover {
+            transform: rotateX(3deg) translateY(-5px);
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 10px;
+            transform-style: preserve-3d;
+        }
+        
+        h1 {
+            font-size: 3.5rem;
+            text-shadow: 
+                0 0 10px #00dbde,
+                0 0 20px #00dbde,
+                0 0 40px #00dbde,
+                0 5px 15px rgba(0, 0, 0, 0.5);
+            margin-bottom: 15px;
+            background: linear-gradient(to right, #00dbde, #fc00ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 3px;
+            font-weight: 800;
+            transform: translateZ(30px);
+        }
+        
+        .level-display {
+            font-size: 1.5rem;
+            background: rgba(0, 0, 0, 0.3);
+            display: inline-block;
+            padding: 10px 25px;
+            border-radius: 30px;
+            margin: 10px 0;
+            border: 1px solid rgba(0, 219, 222, 0.5);
+            box-shadow: 0 0 15px rgba(0, 219, 222, 0.3);
+            transform: translateZ(20px);
+        }
+        
+        .category-display {
+            font-size: 1.2rem;
+            background: rgba(255, 255, 255, 0.1);
+            display: inline-block;
+            padding: 8px 20px;
+            border-radius: 20px;
+            margin: 5px 0;
+            transform: translateZ(15px);
+        }
+        
+        .game-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            transform-style: preserve-3d;
+        }
+        
+        .stats {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .stat-box {
+            background: linear-gradient(135deg, rgba(0, 219, 222, 0.2), rgba(252, 0, 255, 0.2));
+            padding: 15px;
+            border-radius: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 110px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            transform: translateZ(10px);
+            transition: transform 0.3s;
+        }
+        
+        .stat-box:hover {
+            transform: translateZ(15px) scale(1.05);
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #00dbde;
+            text-shadow: 0 0 10px rgba(0, 219, 222, 0.5);
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 10px;
+            transform: translateZ(10px);
+        }
+        
+        button {
+            background: linear-gradient(135deg, #00dbde, #fc00ff);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            box-shadow: 
+                0 5px 15px rgba(0, 0, 0, 0.3),
+                0 0 10px rgba(0, 219, 222, 0.5);
+            transform: translateZ(10px);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        button:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: 0.5s;
+        }
+        
+        button:hover {
+            transform: translateZ(15px) scale(1.05);
+            box-shadow: 
+                0 8px 20px rgba(0, 0, 0, 0.4),
+                0 0 15px rgba(0, 219, 222, 0.7);
+        }
+        
+        button:hover:before {
+            left: 100%;
+        }
+        
+        button:active {
+            transform: translateZ(10px) scale(0.98);
+        }
+        
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .game-board {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+            transform-style: preserve-3d;
+            perspective: 1000px;
+        }
+        
+        .card {
+            aspect-ratio: 1;
+            border-radius: 15px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            color: white;
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transform-style: preserve-3d;
+            position: relative;
+            box-shadow: 
+                0 10px 20px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            transform: translateZ(0);
+        }
+        
+        .card:hover {
+            transform: translateZ(10px) rotateY(5deg);
+            box-shadow: 
+                0 15px 30px rgba(0, 0, 0, 0.4),
+                0 0 15px rgba(0, 219, 222, 0.3);
+        }
+        
+        .card .front, .card .back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 15px;
+            transition: all 0.5s;
+        }
+        
+        .card .front {
+            background: linear-gradient(135deg, #00dbde, #fc00ff);
+            transform: rotateY(180deg);
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        .card .back {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            background-image: 
+                radial-gradient(circle at 30% 30%, rgba(0, 219, 222, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 70% 70%, rgba(252, 0, 255, 0.3) 0%, transparent 50%);
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .card.flipped {
+            transform: rotateY(180deg) translateZ(10px);
+        }
+        
+        .card.matched .front {
+            background: linear-gradient(135deg, #00b09b, #96c93d);
+            box-shadow: 
+                0 0 20px rgba(150, 201, 61, 0.7),
+                inset 0 0 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        .progress-container {
+            background: rgba(0, 0, 0, 0.3);
+            height: 25px;
+            border-radius: 15px;
+            margin: 30px 0;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.3);
+            transform: translateZ(10px);
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(to right, #00dbde, #fc00ff);
+            border-radius: 15px;
+            width: 0%;
+            transition: width 0.5s;
+            box-shadow: 0 0 20px rgba(0, 219, 222, 0.5);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .progress-bar:after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+            animation: shimmer 2s infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+        
+        .level-info {
+            text-align: center;
+            margin: 20px 0;
+            font-size: 1.3rem;
+            color: #00dbde;
+            text-shadow: 0 0 10px rgba(0, 219, 222, 0.5);
+            transform: translateZ(15px);
+        }
+        
+        .level-reward {
+            font-size: 1.8rem;
+            color: #96c93d;
+            text-align: center;
+            margin: 15px 0;
+            display: none;
+            text-shadow: 0 0 15px rgba(150, 201, 61, 0.7);
+            transform: translateZ(20px);
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: translateZ(20px) scale(1); }
+            50% { transform: translateZ(20px) scale(1.05); }
+            100% { transform: translateZ(20px) scale(1); }
+        }
+        
+        /* Start Screen Styles */
+        .start-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            transition: opacity 0.5s, transform 0.5s;
+            transform-style: preserve-3d;
+            perspective: 1000px;
+        }
+        
+        .start-screen.hidden {
+            opacity: 0;
+            pointer-events: none;
+            transform: rotateX(10deg) translateY(-100%);
+        }
+        
+        .start-screen h2 {
+            font-size: 4rem;
+            margin-bottom: 30px;
+            text-align: center;
+            text-shadow: 
+                0 0 10px #00dbde,
+                0 0 20px #00dbde,
+                0 0 40px #00dbde;
+            background: linear-gradient(to right, #00dbde, #fc00ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            transform: translateZ(50px);
+        }
+        
+        .start-screen p {
+            font-size: 1.3rem;
+            margin-bottom: 40px;
+            max-width: 700px;
+            text-align: center;
+            line-height: 1.6;
+            color: #e0e0e0;
+            transform: translateZ(30px);
+        }
+        
+        .category-selector {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 40px;
+            max-width: 700px;
+            transform-style: preserve-3d;
+        }
+        
+        .category-btn {
+            padding: 20px;
+            font-size: 1.2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            border-radius: 20px;
+            transform: translateZ(20px);
+            transition: all 0.3s;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .category-btn:hover {
+            transform: translateZ(30px) scale(1.05);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
+        }
+        
+        .category-btn .icon {
+            font-size: 3rem;
+        }
+        
+        .category-btn.active {
+            background: linear-gradient(135deg, rgba(0, 219, 222, 0.3), rgba(252, 0, 255, 0.3));
+            box-shadow: 
+                0 15px 30px rgba(0, 0, 0, 0.4),
+                0 0 15px rgba(0, 219, 222, 0.5);
+        }
+        
+        .difficulty-selector {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 40px;
+            transform: translateZ(20px);
+        }
+        
+        .difficulty-btn {
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            border-radius: 50px;
+        }
+        
+        .difficulty-btn.active {
+            background: linear-gradient(135deg, #00b09b, #96c93d);
+            box-shadow: 
+                0 10px 20px rgba(0, 0, 0, 0.3),
+                0 0 15px rgba(150, 201, 61, 0.5);
+        }
+        
+        /* Leaderboard Styles */
+        .leaderboard {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 25px;
+            margin-top: 30px;
+            width: 100%;
+            max-width: 600px;
+            display: none;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+            transform: translateZ(20px);
+        }
+        
+        .leaderboard h3 {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 1.8rem;
+            color: #00dbde;
+            text-shadow: 0 0 10px rgba(0, 219, 222, 0.5);
+        }
+        
+        .leaderboard-list {
+            list-style: none;
+        }
+        
+        .leaderboard-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 1.1rem;
+            transition: all 0.3s;
+        }
+        
+        .leaderboard-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            transform: translateX(10px);
+        }
+        
+        /* Pause Screen */
+        .pause-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 10, 20, 0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 50;
+            display: none;
+            backdrop-filter: blur(10px);
+            transform-style: preserve-3d;
+        }
+        
+        .pause-screen.active {
+            display: flex;
+        }
+        
+        .pause-screen h2 {
+            font-size: 3rem;
+            margin-bottom: 30px;
+            color: #00dbde;
+            text-shadow: 0 0 15px rgba(0, 219, 222, 0.7);
+            transform: translateZ(40px);
+        }
+        
+        /* Achievement Styles */
+        .achievement {
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            background: rgba(26, 26, 46, 0.9);
+            color: #e0e0e0;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 
+                0 15px 30px rgba(0, 0, 0, 0.5),
+                0 0 20px rgba(0, 219, 222, 0.5);
+            transform: translateX(150%) translateZ(30px);
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 100;
+            max-width: 350px;
+            border: 1px solid rgba(0, 219, 222, 0.3);
+            backdrop-filter: blur(10px);
+        }
+        
+        .achievement.active {
+            transform: translateX(0) translateZ(30px);
+        }
+        
+        .achievement h4 {
+            color: #00dbde;
+            margin-bottom: 10px;
+            font-size: 1.3rem;
+            text-shadow: 0 0 10px rgba(0, 219, 222, 0.5);
+        }
+        
+        /* Back Button */
+        .back-button {
+            position: absolute;
+            top: 30px;
+            left: 30px;
+            background: rgba(0, 219, 222, 0.2);
+            border: 1px solid rgba(0, 219, 222, 0.5);
+            color: #00dbde;
+            padding: 12px 20px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            transform: translateZ(20px);
+        }
+        
+        .back-button:hover {
+            background: rgba(0, 219, 222, 0.4);
+            transform: translateZ(25px) scale(1.05);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        /* NEW STYLES FOR MONETIZATION AND MOBILE OPTIMIZATION */
+        
+        /* Mobile-first responsive design */
+        @media (max-width: 768px) {
+            .game-board {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 10px;
+            }
+            
+            .game-info {
+                flex-direction: column;
+                gap: 20px;
+            }
+            
+            .stats {
+                justify-content: space-around;
+            }
+            
+            .controls {
+                justify-content: center;
+            }
+            
+            h1 {
+                font-size: 2.5rem;
+            }
+            
+            .start-screen h2 {
+                font-size: 2.5rem;
+            }
+            
+            .category-selector {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .difficulty-selector {
+                flex-direction: column;
+            }
+            
+            .back-button {
+                position: relative;
+                top: 0;
+                left: 0;
+                margin-bottom: 15px;
+                align-self: flex-start;
+            }
+
+            .stat-box {
+                min-width: 80px;
+                padding: 10px;
+            }
+            
+            .stat-value {
+                font-size: 1.5rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .game-board {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .container {
+                padding: 15px;
+            }
+            
+            .stat-box {
+                min-width: 70px;
+                padding: 8px;
+            }
+            
+            .stat-value {
+                font-size: 1.3rem;
+            }
+            
+            .card {
+                font-size: 1.8rem;
+            }
+        }
+        
+        /* Ad container styles */
+        .ad-container {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            margin: 10px 0;
+            min-height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: rgba(255, 255, 255, 0.5);
+            border: 1px dashed rgba(255, 255, 255, 0.2);
+        }
+        
+        /* Shop and IAP styles */
+        .shop-button {
+            background: linear-gradient(135deg, #ffd700, #ff6b00) !important;
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.5) !important;
+        }
+        
+        .premium-badge {
+            background: linear-gradient(135deg, #ffd700, #ff6b00);
+            color: #000;
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            margin-left: 5px;
+        }
+        
+        /* Daily reward system */
+        .daily-reward {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(26, 26, 46, 0.95);
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            z-index: 200;
+            display: none;
+            border: 2px solid #ffd700;
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.5);
+            backdrop-filter: blur(10px);
+        }
+        
+        .reward-amount {
+            font-size: 3rem;
+            color: #ffd700;
+            margin: 20px 0;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.7);
+        }
+        
+        /* Shop Modal */
+        .shop-modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(26, 26, 46, 0.95);
+            padding: 30px;
+            border-radius: 20px;
+            z-index: 200;
+            display: none;
+            max-width: 500px;
+            width: 90%;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 219, 222, 0.3);
+            box-shadow: 0 0 30px rgba(0, 219, 222, 0.5);
+        }
+        
+        .shop-modal h3 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #00dbde;
+            font-size: 1.8rem;
+        }
+        
+        .shop-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 15px;
+            margin-bottom: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .shop-item h4 {
+            color: #00dbde;
+            margin-bottom: 5px;
+        }
+        
+        .shop-item p {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-bottom: 10px;
+        }
+        
+        .shop-item button {
+            width: 100%;
+            background: linear-gradient(135deg, #ffd700, #ff6b00);
+        }
+        
+        .close-button {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+        
+        /* Overlay for modals */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 150;
+            display: none;
+        }
+        
+        /* Coin animation */
+        @keyframes coinPop {
+            0% { transform: scale(0); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+        
+        .coin-pop {
+            animation: coinPop 0.5s ease-out;
+        }
+        
+        /* 3D Floating Animation */
+        @keyframes float {
+            0% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(5deg); }
+            100% { transform: translateY(0) rotate(0deg); }
+        }
+        
+        .floating {
+            animation: float 6s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body>
+    <!-- 3D Background Elements -->
+    <div class="stars" id="stars"></div>
+    <div class="particles" id="particles"></div>
+    
+    <!-- Modal Overlay -->
+    <div class="modal-overlay" id="modal-overlay"></div>
+    
+    <!-- Start Screen -->
+    <div class="start-screen" id="start-screen">
+        <h2 class="floating">3D Memory Master</h2>
+        <p>Embark on a dimensional journey through 1000 challenging levels! Match pairs across multiple categories with stunning 3D effects.</p>
+        
+        <div class="category-selector">
+            <button class="category-btn active floating" data-category="animals">
+                <span class="icon">🐾</span>
+                <span>Animals</span>
+            </button>
+            <button class="category-btn floating" data-category="birds">
+                <span class="icon">🦅</span>
+                <span>Birds</span>
+            </button>
+            <button class="category-btn floating" data-category="space">
+                <span class="icon">🚀</span>
+                <span>Space</span>
+            </button>
+            <button class="category-btn floating" data-category="food">
+                <span class="icon">🍕</span>
+                <span>Food</span>
+            </button>
+            <button class="category-btn floating" data-category="sports">
+                <span class="icon">⚽</span>
+                <span>Sports</span>
+            </button>
+            <button class="category-btn floating" data-category="emojis">
+                <span class="icon">😀</span>
+                <span>Emojis</span>
+            </button>
+        </div>
+        
+        <div class="difficulty-selector">
+            <button class="difficulty-btn active" data-difficulty="easy">Easy</button>
+            <button class="difficulty-btn" data-difficulty="medium">Medium</button>
+            <button class="difficulty-btn" data-difficulty="hard">Hard</button>
+        </div>
+        
+        <button id="start-btn" class="floating">Start 3D Adventure</button>
+        
+        <!-- Ad Container -->
+        <div class="ad-container" id="banner-ad">
+            Advertisement will display here
+        </div>
+        
+        <div class="leaderboard" id="leaderboard">
+            <h3>3D Leaderboard</h3>
+            <ul class="leaderboard-list" id="leaderboard-list">
+                <!-- Leaderboard items will be populated by JavaScript -->
+            </ul>
+        </div>
+    </div>
+    
+    <!-- Pause Screen -->
+    <div class="pause-screen" id="pause-screen">
+        <h2>Game Paused</h2>
+        <button id="resume-btn">Resume Game</button>
+        <button id="restart-btn">Restart Level</button>
+        <button id="main-menu-btn">Main Menu</button>
+    </div>
+    
+    <!-- Achievement Notification -->
+    <div class="achievement" id="achievement">
+        <h4>3D Achievement Unlocked!</h4>
+        <p id="achievement-text">Complete your first level</p>
+    </div>
+    
+    <!-- Daily Reward Popup -->
+    <div class="daily-reward" id="daily-reward">
+        <h3>🎁 Daily Reward!</h3>
+        <div class="reward-amount" id="reward-amount">+50 Coins</div>
+        <p>Come back tomorrow for more!</p>
+        <button id="claim-reward">Claim Reward</button>
+    </div>
+    
+    <!-- Shop Modal -->
+    <div class="shop-modal" id="shop-modal">
+        <button class="close-button" id="close-shop">×</button>
+        <h3>💎 Game Shop</h3>
+        <div class="shop-items" id="shop-items">
+            <!-- Shop items will be populated by JavaScript -->
+        </div>
+    </div>
+    
+    <!-- Main Game -->
+    <header>
+        <button class="back-button" id="back-btn">← Back</button>
+        <button class="shop-button" id="shop-btn">💎 Shop</button>
+        <h1>3D Memory Master</h1>
+        <div class="level-display">Level <span id="level">1</span>/1000</div>
+        <div class="category-display" id="category-display">Animals</div>
+        <p>Match all cards to advance to the next dimension!</p>
+    </header>
+    
+    <div class="container">
+        <!-- Ad Container -->
+        <div class="ad-container" id="game-banner-ad">
+            Advertisement
+        </div>
+        
+        <div class="game-info">
+            <div class="stats">
+                <div class="stat-box">
+                    <div class="stat-value coin-pop" id="coins">100</div>
+                    <div class="stat-label">Coins</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value" id="moves">0</div>
+                    <div class="stat-label">Moves</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value" id="timer">00:00</div>
+                    <div class="stat-label">Time</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value" id="matches">0</div>
+                    <div class="stat-label">Matches</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value" id="score">0</div>
+                    <div class="stat-label">Score</div>
+                </div>
+            </div>
+            <div class="controls">
+                <button id="pause-btn">Pause</button>
+                <button id="reset-btn">Reset Level</button>
+                <button id="hint-btn">3D Hint (3)</button>
+                <button id="share-btn">Share</button>
+            </div>
+        </div>
+        
+        <div class="level-info" id="level-info">
+            Find pairs of matching symbols in 3D!
+        </div>
+        
+        <div class="game-board" id="game-board">
+            <!-- Cards will be generated by JavaScript -->
+        </div>
+        
+        <div class="progress-container">
+            <div class="progress-bar" id="progress-bar"></div>
+        </div>
+        
+        <div class="level-reward" id="level-reward">
+            Level Complete! +50 Points
+        </div>
+        
+        <div class="controls" style="justify-content: center">
+            <button id="next-level-btn" disabled>Next Dimension →</button>
+        </div>
+        
+        <!-- Ad Container -->
+        <div class="ad-container" id="bottom-ad">
+            Advertisement
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Create 3D background elements
+            createStars();
+            createParticles();
+            
+            // Game variables
+            let level = 1;
+            let moves = 0;
+            let matches = 0;
+            let totalMatches = 0;
+            let timer = 0;
+            let timerInterval;
+            let flippedCards = [];
+            let gameStarted = false;
+            let boardSize = 2; // Starting board size
+            let maxLevel = 1000;
+            let score = 0;
+            let difficulty = 'easy';
+            let category = 'animals';
+            let isPaused = false;
+            let remainingHints = 3;
+            let levelHistory = []; // Track completed levels
+            
+            // Monetization variables
+            let coins = 100;
+            let adsWatched = 0;
+            let premiumUser = false;
+            let dailyRewardClaimed = false;
+            
+            // Category symbols
+            const categorySymbols = {
+                animals: ['🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼', '🐨', '🐯', '🦁', '🐮', '🐷', '🐸', '🐵', '🐔', '🐧', '🐦'],
+                birds: ['🦅', '🦆', '🦉', '🦜', '🦩', '🦚', '🐦', '🐧', '🕊️', '🦢', '🦤', '🦃', '🐓', '🐔', '🐥', '🐣', '🦆', '🦅'],
+                space: ['🌕', '🌖', '🌗', '🌘', '🌑', '🌒', '🌓', '🌔', '⭐', '🌟', '🌠', '☄️', '🌌', '🪐', '🚀', '👽', '🛸', '🔭'],
+                food: ['🍎', '🍐', '🍊', '🍋', '🍌', '🍉', '🍇', '🍓', '🫐', '🍈', '🍒', '🍑', '🥭', '🍍', '🥥', '🥝', '🍅', '🍆'],
+                sports: ['⚽', '🏀', '🏈', '⚾', '🥎', '🎾', '🏐', '🏉', '🥏', '🎱', '🪀', '🏓', '🏸', '🏒', '🏑', '🥍', '🏏', '🎿'],
+                emojis: ['😀', '😃', '😄', '😁', '😆', '😅', '😂', '🤣', '🥲', '☺️', '😊', '😇', '🙂', '🙃', '😉', '😌', '😍', '🥰']
+            };
+            
+            // Shop items
+            const shopItems = [
+                { id: 'remove_ads', name: 'Remove Ads', price: '$2.99', desc: 'Play without interruptions', coins: 0, type: 'premium' },
+                { id: 'hint_pack_10', name: '10 Hints Pack', price: '$0.99', desc: 'Get 10 extra hints', coins: 0, type: 'premium' },
+                { id: 'coin_pack_100', name: '100 Coins', price: '$0.99', desc: 'Instant 100 coins', coins: 0, type: 'premium' },
+                { id: 'coin_pack_500', name: '500 Coins', price: '$3.99', desc: 'Instant 500 coins', coins: 0, type: 'premium' },
+                { id: 'premium_pack', name: 'Premium Pack', price: '$4.99', desc: 'Remove ads + 500 coins + 20 hints', coins: 0, type: 'premium' },
+                { id: 'hint_5_coins', name: '5 Hints', price: '50 Coins', desc: 'Get 5 extra hints', coins: 50, type: 'coins' },
+                { id: 'coin_boost', name: '2x Coin Boost', price: '100 Coins', desc: 'Double coins for 5 levels', coins: 100, type: 'coins' }
+            ];
+            
+            // DOM elements
+            const gameBoard = document.getElementById('game-board');
+            const movesElement = document.getElementById('moves');
+            const timerElement = document.getElementById('timer');
+            const matchesElement = document.getElementById('matches');
+            const scoreElement = document.getElementById('score');
+            const coinsElement = document.getElementById('coins');
+            const resetButton = document.getElementById('reset-btn');
+            const hintButton = document.getElementById('hint-btn');
+            const shareButton = document.getElementById('share-btn');
+            const nextLevelButton = document.getElementById('next-level-btn');
+            const levelElement = document.getElementById('level');
+            const progressBar = document.getElementById('progress-bar');
+            const levelReward = document.getElementById('level-reward');
+            const startScreen = document.getElementById('start-screen');
+            const startButton = document.getElementById('start-btn');
+            const pauseScreen = document.getElementById('pause-screen');
+            const pauseButton = document.getElementById('pause-btn');
+            const resumeButton = document.getElementById('resume-btn');
+            const restartButton = document.getElementById('restart-btn');
+            const mainMenuButton = document.getElementById('main-menu-btn');
+            const achievement = document.getElementById('achievement');
+            const achievementText = document.getElementById('achievement-text');
+            const categoryButtons = document.querySelectorAll('.category-btn');
+            const difficultyButtons = document.querySelectorAll('.difficulty-btn');
+            const leaderboard = document.getElementById('leaderboard');
+            const leaderboardList = document.getElementById('leaderboard-list');
+            const backButton = document.getElementById('back-btn');
+            const levelInfo = document.getElementById('level-info');
+            const categoryDisplay = document.getElementById('category-display');
+            const shopButton = document.getElementById('shop-btn');
+            const shopModal = document.getElementById('shop-modal');
+            const closeShopButton = document.getElementById('close-shop');
+            const shopItemsContainer = document.getElementById('shop-items');
+            const dailyRewardModal = document.getElementById('daily-reward');
+            const claimRewardButton = document.getElementById('claim-reward');
+            const rewardAmountElement = document.getElementById('reward-amount');
+            const modalOverlay = document.getElementById('modal-overlay');
+            const bannerAd = document.getElementById('banner-ad');
+            const gameBannerAd = document.getElementById('game-banner-ad');
+            const bottomAd = document.getElementById('bottom-ad');
+            
+            // Initialize game
+            loadGameData();
+            loadLeaderboard();
+            checkDailyReward();
+            updateCoinDisplay();
+            
+            // Event listeners
+            resetButton.addEventListener('click', resetLevel);
+            hintButton.addEventListener('click', showHint);
+            nextLevelButton.addEventListener('click', nextLevel);
+            startButton.addEventListener('click', startGame);
+            pauseButton.addEventListener('click', pauseGame);
+            resumeButton.addEventListener('click', resumeGame);
+            restartButton.addEventListener('click', restartLevel);
+            mainMenuButton.addEventListener('click', returnToMainMenu);
+            backButton.addEventListener('click', goBack);
+            shareButton.addEventListener('click', shareScore);
+            shopButton.addEventListener('click', showShop);
+            closeShopButton.addEventListener('click', closeShop);
+            claimRewardButton.addEventListener('click', claimDailyReward);
+            modalOverlay.addEventListener('click', closeModals);
+            
+            // Category selection
+            categoryButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    categoryButtons.forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+                    category = button.dataset.category;
+                    categoryDisplay.textContent = button.querySelector('span:last-child').textContent;
+                });
+            });
+            
+            // Difficulty selection
+            difficultyButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    difficultyButtons.forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+                    difficulty = button.dataset.difficulty;
+                });
+            });
+            
+            function createStars() {
+                const starsContainer = document.getElementById('stars');
+                const starCount = 200;
+                
+                for (let i = 0; i < starCount; i++) {
+                    const star = document.createElement('div');
+                    star.classList.add('star');
+                    
+                    // Random size between 1-3px
+                    const size = Math.random() * 2 + 1;
+                    star.style.width = `${size}px`;
+                    star.style.height = `${size}px`;
+                    
+                    // Random position
+                    star.style.left = `${Math.random() * 100}%`;
+                    star.style.top = `${Math.random() * 100}%`;
+                    
+                    // Random opacity
+                    star.style.opacity = Math.random() * 0.7 + 0.3;
+                    
+                    starsContainer.appendChild(star);
+                }
+            }
+            
+            function createParticles() {
+                const particlesContainer = document.getElementById('particles');
+                const particleCount = 50;
+                
+                for (let i = 0; i < particleCount; i++) {
+                    const particle = document.createElement('div');
+                    particle.classList.add('particle');
+                    
+                    // Random position
+                    particle.style.left = `${Math.random() * 100}%`;
+                    particle.style.top = `${Math.random() * 100}%`;
+                    
+                    // Random animation
+                    const duration = Math.random() * 20 + 10;
+                    const delay = Math.random() * 5;
+                    particle.style.animation = `float ${duration}s ease-in-out ${delay}s infinite`;
+                    
+                    particlesContainer.appendChild(particle);
+                }
+            }
+            
+            function startGame() {
+                startScreen.classList.add('hidden');
+                initGame();
+                
+                // Show leaderboard after a delay
+                setTimeout(() => {
+                    leaderboard.style.display = 'block';
+                }, 1000);
+                
+                // Show interstitial ad (simulated)
+                if (!premiumUser && level % 3 === 1) {
+                    setTimeout(showInterstitialAd, 1000);
+                }
+            }
+            
+            function initGame() {
+                // Set difficulty-based parameters
+                switch(difficulty) {
+                    case 'easy':
+                        remainingHints = 5;
+                        levelInfo.textContent = `Easy Mode: Find pairs of matching ${category} in 3D!`;
+                        break;
+                    case 'medium':
+                        remainingHints = 3;
+                        levelInfo.textContent = `Medium Mode: Find pairs of matching ${category} in 3D!`;
+                        break;
+                    case 'hard':
+                        remainingHints = 1;
+                        levelInfo.textContent = `Hard Mode: Find pairs of matching ${category} in 3D!`;
+                        break;
+                }
+                
+                // Update hint button text
+                hintButton.textContent = `3D Hint (${remainingHints})`;
+                hintButton.disabled = false;
+                
+                // Calculate board size based on level
+                boardSize = 2 + Math.floor(level / 50);
+                if (boardSize > 6) boardSize = 6;
+                
+                // Set grid layout
+                gameBoard.style.gridTemplateColumns = `repeat(${boardSize}, 1fr)`;
+                
+                // Calculate number of pairs
+                const pairs = boardSize * boardSize / 2;
+                totalMatches = pairs;
+                
+                // Create cards
+                createCards();
+                
+                // Update matches text
+                matchesElement.textContent = `0/${pairs}`;
+                
+                // Update progress bar
+                updateProgressBar();
+                
+                // Show cards briefly at start
+                showAllCards();
+                setTimeout(hideAllCards, 2000);
+            }
+            
+            function createCards() {
+                gameBoard.innerHTML = '';
+                
+                // Get symbols for selected category
+                const symbols = categorySymbols[category];
+                
+                // Get required number of symbols
+                const requiredSymbols = totalMatches;
+                let cardSymbols = [];
+                
+                for (let i = 0; i < requiredSymbols; i++) {
+                    // Add two of each symbol for matching pairs
+                    cardSymbols.push(symbols[i % symbols.length]);
+                    cardSymbols.push(symbols[i % symbols.length]);
+                }
+                
+                // Shuffle the cards
+                cardSymbols = shuffleArray(cardSymbols);
+                
+                // Create card elements
+                cardSymbols.forEach((symbol, index) => {
+                    const card = document.createElement('div');
+                    card.className = 'card';
+                    card.dataset.symbol = symbol;
+                    card.dataset.index = index;
+                    
+                    // Create card faces
+                    const front = document.createElement('div');
+                    front.className = 'front';
+                    front.textContent = symbol;
+                    
+                    const back = document.createElement('div');
+                    back.className = 'back';
+                    back.textContent = '?';
+                    
+                    card.appendChild(front);
+                    card.appendChild(back);
+                    
+                    // Add click event
+                    card.addEventListener('click', () => flipCard(card));
+                    
+                    gameBoard.appendChild(card);
+                });
+            }
+            
+            function flipCard(card) {
+                // If game is paused, do nothing
+                if (isPaused) return;
+                
+                // If already flipped or matched, do nothing
+                if (card.classList.contains('flipped') || card.classList.contains('matched') || flippedCards.length >= 2) {
+                    return;
+                }
+                
+                // Start timer on first flip
+                if (!gameStarted) {
+                    startTimer();
+                    gameStarted = true;
+                }
+                
+                // Add 3D flip effect
+                card.style.transform = 'rotateY(180deg) translateZ(20px)';
+                
+                // Flip the card
+                card.classList.add('flipped');
+                
+                // Add to flipped cards
+                flippedCards.push(card);
+                
+                // Check for match if two cards are flipped
+                if (flippedCards.length === 2) {
+                    moves++;
+                    movesElement.textContent = moves;
+                    
+                    setTimeout(checkMatch, 500);
+                }
+            }
+            
+            function checkMatch() {
+                const [card1, card2] = flippedCards;
+                
+                if (card1.dataset.symbol === card2.dataset.symbol) {
+                    // Match found - add 3D celebration effect
+                    card1.classList.add('matched');
+                    card2.classList.add('matched');
+                    
+                    // Add bounce effect
+                    card1.style.transform = 'rotateY(180deg) translateZ(30px) scale(1.1)';
+                    card2.style.transform = 'rotateY(180deg) translateZ(30px) scale(1.1)';
+                    
+                    setTimeout(() => {
+                        card1.style.transform = 'rotateY(180deg) translateZ(10px) scale(1)';
+                        card2.style.transform = 'rotateY(180deg) translateZ(10px) scale(1)';
+                    }, 300);
+                    
+                    matches++;
+                    matchesElement.textContent = `${matches}/${totalMatches}`;
+                    
+                    // Add score for match
+                    addScore(10);
+                    
+                    // Update progress bar
+                    updateProgressBar();
+                    
+                    // Check for level completion
+                    if (matches === totalMatches) {
+                        levelComplete();
+                    }
+                } else {
+                    // No match - flip back with 3D effect
+                    card1.style.transform = 'rotateY(0deg) translateZ(10px)';
+                    card2.style.transform = 'rotateY(0deg) translateZ(10px)';
+                    
+                    setTimeout(() => {
+                        card1.classList.remove('flipped');
+                        card2.classList.remove('flipped');
+                        card1.style.transform = '';
+                        card2.style.transform = '';
+                    }, 500);
+                }
+                
+                // Reset flipped cards
+                flippedCards = [];
+            }
+            
+            function startTimer() {
+                clearInterval(timerInterval);
+                timer = 0;
+                timerInterval = setInterval(() => {
+                    if (!isPaused) {
+                        timer++;
+                        const minutes = Math.floor(timer / 60).toString().padStart(2, '0');
+                        const seconds = (timer % 60).toString().padStart(2, '0');
+                        timerElement.textContent = `${minutes}:${seconds}`;
+                    }
+                }, 1000);
+            }
+            
+            function levelComplete() {
+                clearInterval(timerInterval);
+                gameStarted = false;
+                
+                // Add level to history
+                levelHistory.push(level);
+                
+                // Calculate time bonus
+                const timeBonus = Math.max(100 - timer, 0);
+                addScore(timeBonus);
+                
+                // Calculate moves bonus
+                const movesBonus = Math.max(50 - moves, 0);
+                addScore(movesBonus);
+                
+                // Level completion bonus
+                addScore(50);
+                
+                // Add coin reward
+                const coinReward = level * 2;
+                addCoins(coinReward);
+                
+                // Show level reward
+                levelReward.textContent = `3D Level Complete! +${timeBonus + movesBonus + 50} Points & +${coinReward} Coins`;
+                levelReward.style.display = 'block';
+                setTimeout(() => {
+                    levelReward.style.display = 'none';
+                }, 3000);
+                
+                // Enable next level button
+                nextLevelButton.disabled = false;
+                
+                // Check for achievements
+                checkAchievements();
+                
+                // Save game data
+                saveGameData();
+                
+                // Show interstitial ad every 3 levels
+                if (!premiumUser && level % 3 === 0) {
+                    setTimeout(showInterstitialAd, 2000);
+                }
+            }
+            
+            function resetLevel() {
+                clearInterval(timerInterval);
+                
+                // Reset variables
+                moves = 0;
+                matches = 0;
+                flippedCards = [];
+                gameStarted = false;
+                
+                // Update UI
+                movesElement.textContent = '0';
+                timerElement.textContent = '00:00';
+                matchesElement.textContent = `0/${totalMatches}`;
+                nextLevelButton.disabled = true;
+                
+                // Reinitialize game
+                initGame();
+            }
+            
+            function nextLevel() {
+                if (level < maxLevel) {
+                    level++;
+                    levelElement.textContent = level;
+                    resetLevel();
+                } else {
+                    alert('3D Congratulations! You have completed all 1000 levels!');
+                    unlockAchievement("3D Memory Master", "Completed all 1000 levels!");
+                }
+            }
+            
+            function goBack() {
+                if (level > 1) {
+                    level--;
+                    levelElement.textContent = level;
+                    resetLevel();
+                } else {
+                    returnToMainMenu();
+                }
+            }
+            
+            function showHint() {
+                if (flippedCards.length > 0) return;
+                
+                if (remainingHints <= 0) {
+                    if (coins >= 20) {
+                        // Charge coins for hint
+                        coins -= 20;
+                        updateCoinDisplay();
+                        remainingHints = 1;
+                        hintButton.textContent = `3D Hint (${remainingHints})`;
+                    } else {
+                        // Offer rewarded ad for free hint
+                        if (confirm("Not enough coins! Watch a short ad for a free hint?")) {
+                            showRewardedAd().then(() => {
+                                remainingHints = 1;
+                                hintButton.textContent = `3D Hint (${remainingHints})`;
+                                showHint(); // Recursive call to use the new hint
+                            });
+                        }
+                        return;
+                    }
+                }
+                
+                // Get all unmatched cards
+                const unmatchedCards = Array.from(document.querySelectorAll('.card:not(.matched)'));
+                
+                if (unmatchedCards.length < 2) return;
+                
+                // Find a matching pair
+                let pairFound = false;
+                let card1, card2;
+                
+                for (let i = 0; i < unmatchedCards.length - 1 && !pairFound; i++) {
+                    for (let j = i + 1; j < unmatchedCards.length && !pairFound; j++) {
+                        if (unmatchedCards[i].dataset.symbol === unmatchedCards[j].dataset.symbol) {
+                            card1 = unmatchedCards[i];
+                            card2 = unmatchedCards[j];
+                            pairFound = true;
+                        }
+                    }
+                }
+                
+                if (pairFound) {
+                    // Use a hint
+                    remainingHints--;
+                    hintButton.textContent = `3D Hint (${remainingHints})`;
+                    
+                    // Add 3D highlight effect
+                    card1.style.boxShadow = '0 0 25px rgba(0, 219, 222, 0.8)';
+                    card2.style.boxShadow = '0 0 25px rgba(0, 219, 222, 0.8)';
+                    
+                    // Briefly show the hint with 3D effect
+                    card1.classList.add('flipped');
+                    card2.classList.add('flipped');
+                    card1.style.transform = 'rotateY(180deg) translateZ(30px)';
+                    card2.style.transform = 'rotateY(180deg) translateZ(30px)';
+                    
+                    setTimeout(() => {
+                        card1.classList.remove('flipped');
+                        card2.classList.remove('flipped');
+                        card1.style.transform = '';
+                        card2.style.transform = '';
+                        card1.style.boxShadow = '';
+                        card2.style.boxShadow = '';
+                    }, 1000);
+                    
+                    // Disable hint button if no hints left
+                    if (remainingHints <= 0) {
+                        hintButton.disabled = true;
+                    }
+                }
+            }
+            
+            function updateProgressBar() {
+                const progress = (matches / totalMatches) * 100;
+                progressBar.style.width = `${progress}%`;
+            }
+            
+            function shuffleArray(array) {
+                // Fisher-Yates shuffle algorithm
+                for (let i = array.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [array[i], array[j]] = [array[j], array[i]];
+                }
+                return array;
+            }
+            
+            function showAllCards() {
+                const cards = document.querySelectorAll('.card');
+                cards.forEach(card => {
+                    card.classList.add('flipped');
+                    card.style.transform = 'rotateY(180deg) translateZ(20px)';
+                });
+            }
+            
+            function hideAllCards() {
+                const cards = document.querySelectorAll('.card');
+                cards.forEach(card => {
+                    card.classList.remove('flipped');
+                    card.style.transform = '';
+                });
+            }
+            
+            function addScore(points) {
+                score += points;
+                scoreElement.textContent = score;
+                
+                // Add 3D score animation
+                scoreElement.style.transform = 'scale(1.2)';
+                setTimeout(() => {
+                    scoreElement.style.transform = 'scale(1)';
+                }, 300);
+            }
+            
+            function addCoins(amount) {
+                coins += amount;
+                updateCoinDisplay();
+                
+                // Add coin animation
+                coinsElement.classList.remove('coin-pop');
+                void coinsElement.offsetWidth; // Trigger reflow
+                coinsElement.classList.add('coin-pop');
+            }
+            
+            function updateCoinDisplay() {
+                coinsElement.textContent = coins;
+            }
+            
+            function pauseGame() {
+                isPaused = true;
+                pauseScreen.classList.add('active');
+            }
+            
+            function resumeGame() {
+                isPaused = false;
+                pauseScreen.classList.remove('active');
+            }
+            
+            function restartLevel() {
+                resumeGame();
+                resetLevel();
+            }
+            
+            function returnToMainMenu() {
+                resumeGame();
+                startScreen.classList.remove('hidden');
+                leaderboard.style.display = 'none';
+                saveGameData();
+            }
+            
+            function shareScore() {
+                const shareText = `I scored ${score} points and reached level ${level} in 3D Memory Master! Can you beat me? 🎮`;
+                
+                // Check if the Web Share API is supported
+                if (navigator.share) {
+                    navigator.share({
+                        title: '3D Memory Master',
+                        text: shareText,
+                        url: 'https://play.google.com/store/apps/details?id=com.yourcompany.memorymaster' // Replace with your Play Store URL
+                    })
+                    .then(() => console.log('Successful share'))
+                    .catch((error) => console.log('Error sharing:', error));
+                } else {
+                    // Fallback: copy to clipboard
+                    navigator.clipboard.writeText(shareText)
+                        .then(() => alert('Score copied to clipboard! Share it with your friends.'))
+                        .catch(err => console.error('Could not copy text: ', err));
+                }
+            }
+            
+            function showShop() {
+                shopItemsContainer.innerHTML = '';
+                
+                shopItems.forEach(item => {
+                    const shopItemElement = document.createElement('div');
+                    shopItemElement.className = 'shop-item';
+                    
+                    shopItemElement.innerHTML = `
+                        <h4>${item.name} ${item.type === 'premium' ? '<span class="premium-badge">PREMIUM</span>' : ''}</h4>
+                        <p>${item.desc}</p>
+                        <button data-id="${item.id}" data-price="${item.coins}" data-type="${item.type}">
+                            ${item.type === 'premium' ? item.price : `${item.price} Coins`}
+                        </button>
+                    `;
+                    
+                    shopItemsContainer.appendChild(shopItemElement);
+                });
+                
+                // Add event listeners to shop buttons
+                document.querySelectorAll('.shop-item button').forEach(button => {
+                    button.addEventListener('click', (e) => {
+                        const id = e.target.dataset.id;
+                        const price = parseInt(e.target.dataset.price);
+                        const type = e.target.dataset.type;
+                        
+                        if (type === 'coins') {
+                            if (coins >= price) {
+                                coins -= price;
+                                updateCoinDisplay();
+                                purchaseProduct(id);
+                                closeShop();
+                            } else {
+                                alert(`Not enough coins! You need ${price} coins. Watch an ad to earn more?`);
+                                showRewardedAd().then(() => {
+                                    // After watching ad, try again
+                                    if (coins >= price) {
+                                        coins -= price;
+                                        updateCoinDisplay();
+                                        purchaseProduct(id);
+                                        closeShop();
+                                    }
+                                });
+                            }
+                        } else {
+                            // Premium purchase - in real app, this would trigger Google Play Billing
+                            alert(`In a real app, this would open the purchase flow for ${id}`);
+                            // For demo purposes, we'll simulate purchase
+                            if (confirm(`Simulate purchase of ${id}? (In real app, this would cost money)`)) {
+                                purchaseProduct(id);
+                                closeShop();
+                            }
+                        }
+                    });
+                });
+                
+                shopModal.style.display = 'block';
+                modalOverlay.style.display = 'block';
+            }
+            
+            function closeShop() {
+                shopModal.style.display = 'none';
+                modalOverlay.style.display = 'none';
+            }
+            
+            function closeModals() {
+                shopModal.style.display = 'none';
+                dailyRewardModal.style.display = 'none';
+                modalOverlay.style.display = 'none';
+            }
+            
+            function purchaseProduct(productId) {
+                switch(productId) {
+                    case 'remove_ads':
+                        premiumUser = true;
+                        hideAds();
+                        unlockAchievement("Ad-Free Experience", "Purchased ad removal!");
+                        break;
+                    case 'hint_pack_10':
+                    case 'hint_5_coins':
+                        remainingHints += productId === 'hint_pack_10' ? 10 : 5;
+                        hintButton.textContent = `3D Hint (${remainingHints})`;
+                        hintButton.disabled = false;
+                        break;
+                    case 'coin_pack_100':
+                    case 'coin_pack_500':
+                        addCoins(productId === 'coin_pack_100' ? 100 : 500);
+                        break;
+                    case 'premium_pack':
+                        premiumUser = true;
+                        addCoins(500);
+                        remainingHints += 20;
+                        hintButton.textContent = `3D Hint (${remainingHints})`;
+                        hideAds();
+                        unlockAchievement("Premium Player", "Purchased the premium pack!");
+                        break;
+                    case 'coin_boost':
+                        // This would activate a temporary coin boost in a real game
+                        alert("2x Coin Boost activated for next 5 levels!");
+                        break;
+                }
+                updateCoinDisplay();
+                saveGameData();
+            }
+            
+            function checkDailyReward() {
+                const lastRewardDate = localStorage.getItem('lastRewardDate');
+                const today = new Date().toDateString();
+                
+                if (lastRewardDate !== today) {
+                    // Show daily reward after a delay
+                    setTimeout(showDailyReward, 1500);
+                }
+            }
+            
+            function showDailyReward() {
+                const reward = Math.floor(Math.random() * 100) + 50; // 50-150 coins
+                rewardAmountElement.textContent = `+${reward} Coins`;
+                dailyRewardModal.style.display = 'block';
+                modalOverlay.style.display = 'block';
+            }
+            
+            function claimDailyReward() {
+                const reward = parseInt(rewardAmountElement.textContent);
+                addCoins(reward);
+                dailyRewardModal.style.display = 'none';
+                modalOverlay.style.display = 'none';
+                localStorage.setItem('lastRewardDate', new Date().toDateString());
+                saveGameData();
+            }
+            
+            // Ad System (Simulated)
+            function showInterstitialAd() {
+                // Simulate ad display
+                console.log("Showing interstitial ad");
+                // In real implementation: AdMob.showInterstitial();
+                
+                // Reward user for watching ad
+                addCoins(10);
+                adsWatched++;
+                
+                // Unlock features after certain number of ads
+                if (adsWatched >= 5 && !premiumUser) {
+                    unlockAchievement("Ad Enthusiast", "Watched 5 ads!");
+                }
+            }
+            
+            function showRewardedAd() {
+                return new Promise((resolve) => {
+                    // Simulate rewarded ad
+                    console.log("Showing rewarded ad");
+                    // In real implementation: AdMob.showRewardedVideo();
+                    
+                    // Grant reward after "ad" is watched
+                    setTimeout(() => {
+                        addCoins(25);
+                        resolve(true);
+                    }, 1000);
+                });
+            }
+            
+            function hideAds() {
+                bannerAd.style.display = 'none';
+                gameBannerAd.style.display = 'none';
+                bottomAd.style.display = 'none';
+            }
+            
+            function checkAchievements() {
+                if (level === 1) {
+                    unlockAchievement("First Dimension", "Completed your first 3D level!");
+                }
+                
+                if (level === 10) {
+                    unlockAchievement("3D Novice", "Completed 10 3D levels!");
+                }
+                
+                if (level === 50) {
+                    unlockAchievement("3D Explorer", "Completed 50 3D levels!");
+                }
+                
+                if (level === 100) {
+                    unlockAchievement("3D Master", "Completed 100 3D levels!");
+                }
+                
+                if (moves <= totalMatches) {
+                    unlockAchievement("Efficient Mind", "Completed a level with minimal moves!");
+                }
+                
+                if (timer < 30) {
+                    unlockAchievement("Warp Speed", "Completed a level in under 30 seconds!");
+                }
+                
+                // Category-specific achievements
+                if (category === 'animals' && level >= 5) {
+                    unlockAchievement("Animal Lover", "Completed 5 animal levels!");
+                }
+                
+                if (category === 'birds' && level >= 5) {
+                    unlockAchievement("Bird Watcher", "Completed 5 bird levels!");
+                }
+                
+                if (category === 'space' && level >= 5) {
+                    unlockAchievement("Space Explorer", "Completed 5 space levels!");
+                }
+            }
+            
+            function unlockAchievement(title, description) {
+                achievementText.textContent = `${title}: ${description}`;
+                achievement.classList.add('active');
+                
+                setTimeout(() => {
+                    achievement.classList.remove('active');
+                }, 3000);
+            }
+            
+            function loadLeaderboard() {
+                // In a real implementation, this would load from localStorage or a server
+                const dummyLeaderboard = [
+                    { name: "3D Master", score: 12500 },
+                    { name: "Memory Wizard", score: 9800 },
+                    { name: "Recall Pro", score: 7600 },
+                    { name: "You", score: score }
+                ];
+                
+                // Sort by score (descending)
+                dummyLeaderboard.sort((a, b) => b.score - a.score);
+                
+                // Populate leaderboard
+                leaderboardList.innerHTML = '';
+                dummyLeaderboard.forEach((entry, index) => {
+                    const li = document.createElement('li');
+                    li.className = 'leaderboard-item';
+                    li.innerHTML = `
+                        <span>${index + 1}. ${entry.name}</span>
+                        <span>${entry.score}</span>
+                    `;
+                    leaderboardList.appendChild(li);
+                });
+            }
+            
+            function saveGameData() {
+                const gameData = {
+                    level,
+                    coins,
+                    premiumUser,
+                    adsWatched,
+                    score,
+                    remainingHints,
+                    difficulty,
+                    category
+                };
+                localStorage.setItem('memoryMasterSave', JSON.stringify(gameData));
+            }
+            
+            function loadGameData() {
+                const saved = localStorage.getItem('memoryMasterSave');
+                if (saved) {
+                    const gameData = JSON.parse(saved);
+                    level = gameData.level || 1;
+                    coins = gameData.coins || 100;
+                    premiumUser = gameData.premiumUser || false;
+                    adsWatched = gameData.adsWatched || 0;
+                    score = gameData.score || 0;
+                    remainingHints = gameData.remainingHints || 3;
+                    difficulty = gameData.difficulty || 'easy';
+                    category = gameData.category || 'animals';
+                    
+                    // Update UI based on loaded data
+                    levelElement.textContent = level;
+                    updateCoinDisplay();
+                    scoreElement.textContent = score;
+                    
+                    // Update category and difficulty buttons
+                    categoryButtons.forEach(btn => {
+                        if (btn.dataset.category === category) {
+                            btn.classList.add('active');
+                            categoryDisplay.textContent = btn.querySelector('span:last-child').textContent;
+                        } else {
+                            btn.classList.remove('active');
+                        }
+                    });
+                    
+                    difficultyButtons.forEach(btn => {
+                        if (btn.dataset.difficulty === difficulty) {
+                            btn.classList.add('active');
+                        } else {
+                            btn.classList.remove('active');
+                        }
+                    });
+                    
+                    // Hide ads if premium user
+                    if (premiumUser) {
+                        hideAds();
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
